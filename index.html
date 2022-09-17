@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>word permutations generator</title>
+    <style>
+        form {
+            display: table;
+            position: sticky;
+            top: 0;
+            padding: 1em 0;
+            background-color: rgba(255, 255, 255, 0.75);
+        }
+
+        div {
+            margin-top: 1em;
+            white-space: pre-wrap;
+            column-width: 7em;
+            column-gap: 1em;
+        }
+    </style>
+</head>
+<body>
+
+<form>
+    <input name="word" placeholder="input some word">
+    <button>update result</button>
+</form>
+
+<div></div>
+
+<script>
+(() => {
+    const formElem = document.querySelector('form');
+    const inputElem = document.querySelector('input');
+    const outputElem = document.querySelector('div');
+    const wordParam = inputElem.name;
+
+    if (location.search) {
+        const urlParams = new URLSearchParams(location.search);
+        const word = urlParams.get(wordParam);
+
+        if (word) {
+            inputElem.value = word;
+            updateOutput();
+        }
+    }
+
+    formElem.onsubmit = (event) => {
+        updateOutput();
+
+        if (history.pushState) {
+            const newUrl = new URL(window.location.href);
+            newUrl.searchParams.set(wordParam, inputElem.value);
+            window.history.pushState({path: newUrl.href}, '' , newUrl.href);
+            event.preventDefault();
+        }
+    };
+
+
+    function updateOutput() {
+        const word = inputElem.value.trim();
+        const results = new Set();
+
+        _processLevel([], word.split(''));
+        outputElem.textContent = Array.from(results).sort().join('\n');
+
+
+        function _processLevel(collectedResult, remainingLetters) {
+            if (remainingLetters.length) {
+                for (const [index, letter] of remainingLetters.entries()) {
+                    const updatedResult = Array.from(collectedResult);
+                    updatedResult.push(letter);
+                    _processLevel(updatedResult, remainingLetters.filter((_, i) => (i !== index)));
+                }
+            } else {
+                const newWord = collectedResult.join('');
+
+                if (newWord !== word) {
+                    results.add(newWord);
+                }
+            }
+        }
+    }
+})();
+
+</script>
+</body>
+</html>
